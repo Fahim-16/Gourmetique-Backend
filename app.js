@@ -12,6 +12,7 @@ const ReviewModel = require("./cureviewModel");
 const { starter } = require("./starter");
 const { main_course } = require("./main_course");
 const { desserts } = require("./desserts");
+const { orderModel } = require("./orderModel");
 
 
 const app = express();
@@ -378,6 +379,24 @@ app.post("/viewdesserts", async (req, res) => {
 
 
 
+// View a Specific Restaurant by ID (POST request)
+app.post("/viewsprestaurant", async (req, res) => {
+  try {
+    const restaurantId = req.body._id;
+    const restaurant = await restaurantregModel.findById(restaurantId).select('restaurantName address phone');
+
+    if (!restaurant) {
+      return res.status(404).json({ message: 'Restaurant not found' });
+    }
+
+    res.json(restaurant);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
 
 app.get("/viewcus", async (req, res) => {
   try {
@@ -442,6 +461,35 @@ app.post("/delcus", async (req, res) => {
 });
 
 
+
+
+//Place Order
+app.post('/placeorder', async (req, res) => {
+  const { hotelId, items, numberOfCustomers, timeSlot, grandTotal, customerId } = req.body;
+
+  const newOrder = new orderModel({
+    hotelId,
+    items,
+    numberOfCustomers,
+    timeSlot,
+    grandTotal,  // Use the grand total from the request
+    customerId,  // Use the customerId from the request
+  });
+
+  try {
+    // Save the order to the database
+    const savedOrder = await newOrder.save();
+
+    // Respond with the saved order
+    res.status(200).json({
+      message: 'Order placed successfully!',
+      order: savedOrder,
+    });
+  } catch (error) {
+    console.error('Error placing order:', error);
+    res.status(500).json({ message: 'Failed to place order. Please try again.' });
+  }
+});
 
 
 
