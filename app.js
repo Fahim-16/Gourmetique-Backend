@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 const { restaurantregModel } = require("./restaurantregModel");
 const customerModel = require("./customerModel");
 const  ReviewModel= require("./cureviewModel");
+const { starter } = require("./starter");
 
 
 const app = express();
@@ -182,14 +183,14 @@ app.post("/cuslogin", async (req, res) => {
 
 app.post('/add-starter', async (req, res) => {
     try {
-      const { si, item, price } = req.body;
+      const { hotelid, si, item, price } = req.body;
   
       // Basic validation
-      if (!si || !item || !price) {
+      if (!hotelid || !si || !item || !price) {
         return res.status(400).json({ message: 'All fields are required' });
       }
   
-      const newStarter = new Starter({ si, item, price });
+      const newStarter = new starter({ si, item, price });
       await newStarter.save();
   
       res.status(201).json({ message: 'Starter added successfully', data: newStarter });
