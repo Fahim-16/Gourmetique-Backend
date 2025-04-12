@@ -161,7 +161,7 @@ app.post("/cuslogin", async (req, res) => {
     const isMatch = await bcrypt.compare(password, customer.password);
     if (!isMatch) return res.status(400).json({ error: "Invalid credentials!" });
 
-    const token = jwt.sign({ id: customer._id }, SECRET_KEY, { expiresIn: "1h" });
+    const token = jwt.sign({ id: customer._id }, SECRET_KEY, { expiresIn: "1d" });
 
     // Send token along with customer details
     res.status(200).json({
@@ -262,7 +262,7 @@ app.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, restaurant.password);
     if (!isMatch) return res.status(400).json({ error: "Invalid credentials!" });
 
-    const token = jwt.sign({ id: restaurant._id }, SECRET_KEY, { expiresIn: "1h" });
+    const token = jwt.sign({ id: restaurant._id }, SECRET_KEY, { expiresIn: "1d" });
 
     // Send token along with user details
     res.status(200).json({
