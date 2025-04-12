@@ -10,6 +10,8 @@ const { restaurantregModel } = require("./restaurantregModel");
 const customerModel = require("./customerModel");
 const  ReviewModel= require("./cureviewModel");
 const { starter } = require("./starter");
+const { main_course } = require("./main_course");
+const { desserts } = require("./desserts");
 
 
 const app = express();
@@ -190,7 +192,7 @@ app.post('/add-starter', async (req, res) => {
         return res.status(400).json({ message: 'All fields are required' });
       }
   
-      const newStarter = new starter({ si, item, price });
+      const newStarter = new starter({ hotelid, si, item, price });
       await newStarter.save();
   
       res.status(201).json({ message: 'Starter added successfully', data: newStarter });
@@ -199,8 +201,49 @@ app.post('/add-starter', async (req, res) => {
       res.status(500).json({ message: 'Server error' });
     }
   });
+
+
+
+
+  app.post('/add-mains', async (req, res) => {
+    try {
+      const { hotelid, msi, mitem, mprice } = req.body;
+  
+      // Basic validation
+      if (!hotelid || !msi || !mitem || !mprice) {
+        return res.status(400).json({ message: 'All fields are required' });
+      }
+  
+      const newMains = new main_course({ hotelid, msi, mitem, mprice });
+      await newMains.save();
+  
+      res.status(201).json({ message: 'Main Course added successfully', data: newMains });
+    } catch (error) {
+      console.error('Error adding main course:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
   
 
+
+  app.post('/add-dessert', async (req, res) => {
+    try {
+      const { hotelid, dsi, ditem, dprice } = req.body;
+  
+      // Basic validation
+      if (!hotelid || !dsi || !ditem || !dprice) {
+        return res.status(400).json({ message: 'All fields are required' });
+      }
+  
+      const newDessert = new desserts({ hotelid, dsi, ditem, dprice });
+      await newDessert.save();
+  
+      res.status(201).json({ message: 'Dessert added successfully', data: newDessert });
+    } catch (error) {
+      console.error('Error adding dessert:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
 
 
 
