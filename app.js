@@ -335,6 +335,50 @@ app.get("/viewrestaurant", async (req, res) => {
   }
 });
 
+// View All Starters
+app.post("/viewstarters", async (req, res) => {
+  try {
+    const hotelid = req.body.hotelid;
+    const starters = await starter.find({
+      hotelid: hotelid
+    });
+    res.json(starters);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// View All Main Course
+app.post("/viewmains", async (req, res) => {
+  try {
+    const hotelid = req.body.hotelid;
+    const mains = await main_course.find({
+      hotelid: hotelid
+    });
+    res.json(mains);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// View All Desserts
+app.post("/viewdesserts", async (req, res) => {
+  try {
+    const hotelid = req.body.hotelid;
+    const desserts1 = await desserts.find({
+      hotelid: hotelid
+    });
+    res.json(desserts1);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
+
 app.get("/viewcus", async (req, res) => {
   try {
     const customer = await customerModel.find();
