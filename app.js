@@ -465,7 +465,7 @@ app.post("/delcus", async (req, res) => {
 
 //Place Order
 app.post('/placeorder', async (req, res) => {
-  const { hotelId, items, numberOfCustomers, timeSlot, grandTotal, customerId } = req.body;
+  const { hotelId, items, numberOfCustomers, timeSlot, grandTotal, customerId, paymentId } = req.body;
 
   const newOrder = new orderModel({
     hotelId,
@@ -474,6 +474,7 @@ app.post('/placeorder', async (req, res) => {
     timeSlot,
     grandTotal,  // Use the grand total from the request
     customerId,  // Use the customerId from the request
+    paymentId,
   });
 
   try {

@@ -16,6 +16,7 @@ const orderSchema = new mongoose.Schema({
     timeSlot: { type: String },
     grandTotal: { type: Number },
     customerId: { type: String },
+    paymentId: { type: String },
 });
 
 const orderModel = mongoose.model("Orders", orderSchema);
