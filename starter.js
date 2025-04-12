@@ -4,7 +4,7 @@ const  StarterSchema = new mongoose.Schema({
     hotelid:{type:String},
     si:{type:Number},
     item:{type:String},
-    price:{type:Number},
+    price:{type:Number}
 
 });
 
