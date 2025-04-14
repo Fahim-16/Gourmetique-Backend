@@ -507,6 +507,31 @@ app.post('/placeorder', async (req, res) => {
 
 
 
+// View Orders by Hotel ID using POST and req.body
+app.post('/vieworders', async (req, res) => {
+  const { hotelId } = req.body;
+
+  if (!hotelId) {
+    return res.status(400).json({ message: 'Missing hotelId in request body.' });
+  }
+
+  try {
+    // Fetch orders matching the specified hotelId
+    const orders = await orderModel.find({ hotelId });
+
+    // Respond with the list of orders
+    res.status(200).json({
+      message: 'Orders fetched successfully!',
+      orders,
+    });
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ message: 'Failed to fetch orders. Please try again.' });
+  }
+});
+
+
+
 
 // Start Server
 app.listen(3001, () => {
