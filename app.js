@@ -587,7 +587,17 @@ app.post('/getAcceptedOrders', async (req, res) => {
 });
 
 
+// API to get orders in user profile
+app.post('/getUserOrders', async (req, res) => {
+  const { customerId } = req.body;
 
+  try {
+    const orders = await orderModel.find({ customerId: customerId });
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).send({ message: 'Error retrieving orders.', error });
+  }
+});
 
 
 
