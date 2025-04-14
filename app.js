@@ -13,6 +13,7 @@ const { starter } = require("./starter");
 const { main_course } = require("./main_course");
 const { desserts } = require("./desserts");
 const { orderModel } = require("./orderModel");
+const { rushModel } = require("./rushModel");
 
 
 const app = express();
@@ -477,14 +478,24 @@ app.post('/placeorder', async (req, res) => {
     paymentId,
   });
 
+  const newOrderSummary = new rushModel({
+    hotelId,
+    numberOfCustomers,
+    timeSlot,
+  });
+
   try {
     // Save the order to the database
     const savedOrder = await newOrder.save();
+
+    // Save the summary order to the other table
+    const savedOrderSummary = await newOrderSummary.save();
 
     // Respond with the saved order
     res.status(200).json({
       message: 'Order placed successfully!',
       order: savedOrder,
+      orderSummary: savedOrderSummary,
     });
   } catch (error) {
     console.error('Error placing order:', error);
