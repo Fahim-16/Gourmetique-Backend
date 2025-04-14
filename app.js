@@ -14,6 +14,7 @@ const { main_course } = require("./main_course");
 const { desserts } = require("./desserts");
 const { orderModel } = require("./orderModel");
 const { rushModel } = require("./rushModel");
+const { AcceptedOrder } = require("./AcceptedOrder");
 
 
 const app = express();
@@ -507,28 +508,95 @@ app.post('/placeorder', async (req, res) => {
 
 
 
-// View Orders by Hotel ID using POST and req.body
 app.post('/vieworders', async (req, res) => {
   const { hotelId } = req.body;
 
-  if (!hotelId) {
-    return res.status(400).json({ message: 'Missing hotelId in request body.' });
-  }
-
   try {
-    // Fetch orders matching the specified hotelId
+    // Step 1: Fetch all orders for the given hotelId
     const orders = await orderModel.find({ hotelId });
 
-    // Respond with the list of orders
-    res.status(200).json({
-      message: 'Orders fetched successfully!',
-      orders,
-    });
+    // Step 2: Get all accepted orders for the hotel
+    const acceptedOrders = await AcceptedOrder.find({ hotelId });
+
+    const acceptedOrderIds = acceptedOrders.map(order => order.orderId.toString());
+
+    // Step 3: Filter out accepted orders
+    const newOrders = orders.filter(order => !acceptedOrderIds.includes(order._id.toString()));
+
+    // Step 4: Populate customer name using customerId
+    const ordersWithCustomerName = await Promise.all(
+      newOrders.map(async (order) => {
+        const customer = await customerModel.findById(order.customerId).select('name'); // or 'customerName'
+        return {
+          ...order._doc,
+          customerName: customer ? customer.name : 'Unknown Customer'
+        };
+      })
+    );
+
+    res.status(200).json({ message: 'Orders fetched successfully!', orders: ordersWithCustomerName });
+
   } catch (error) {
-    console.error('Error fetching orders:', error);
-    res.status(500).json({ message: 'Failed to fetch orders. Please try again.' });
+    console.error('Error fetching new orders:', error);
+    res.status(500).send({ message: 'Error fetching new orders.', error });
   }
 });
+
+
+
+
+
+
+// API to save accepted order
+app.post('/saveAcceptedOrder', async (req, res) => {
+  const { orderId, customerName, orderDate, grandTotal, items, hotelId, timeSlot } = req.body;
+
+  // Convert "DD/MM/YYYY" string to Date object
+  const parsedDate = new Date(orderDate.split('/').reverse().join('-'));
+
+  const newOrder = new AcceptedOrder({
+    orderId,
+    customerName,
+    orderDate: parsedDate,
+    grandTotal,
+    items,
+    hotelId,
+    timeSlot
+  });
+
+  try {
+    await newOrder.save();
+    res.status(200).send({ message: 'Order accepted and saved!' });
+  } catch (error) {
+    console.error('Error saving accepted order:', error);
+    res.status(500).send({ message: 'Error saving accepted order.', error });
+  }
+});
+
+
+// API to get accepted orders
+app.post('/getAcceptedOrders', async (req, res) => {
+  const { hotelId } = req.body;
+
+  try {
+    const acceptedOrders = await AcceptedOrder.find({ hotelId });
+    res.status(200).json(acceptedOrders);
+  } catch (error) {
+    res.status(500).send({ message: 'Error retrieving accepted orders.', error });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
