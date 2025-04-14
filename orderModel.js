@@ -17,6 +17,7 @@ const orderSchema = new mongoose.Schema({
     grandTotal: { type: Number },
     customerId: { type: String },
     paymentId: { type: String },
+    orderDate: { type: Date, default: Date.now },
 });
 
 const orderModel = mongoose.model("Orders", orderSchema);
