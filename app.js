@@ -15,6 +15,7 @@ const { desserts } = require("./desserts");
 const { orderModel } = require("./orderModel");
 const { rushModel } = require("./rushModel");
 const { AcceptedOrder } = require("./AcceptedOrder");
+const AdsModel = require("./resads");
 
 
 const app = express();
@@ -104,6 +105,23 @@ app.post("/cusreview", upload.single("image"), async (req, res) => {
     });
 
     await newReview.save();
+    res.status(201).json({ message: "posted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+app.post("/resads", upload.single("image"), async (req, res) => {
+  try {
+    const { title, description } = req.body;
+    if (!req.file) return res.status(400).json({ error: "Please upload an image!" });
+
+    const newAds = new AdsModel ({
+      image: req.file.path, // ✅ Save image path
+      title,
+      description
+    });
+
+    await newAds.save();
     res.status(201).json({ message: "posted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -415,6 +433,14 @@ app.get("/viewreview", async (req, res) => {
   try {
     const reviews = await ReviewModel.find();
     res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+app.get("/viewads", async (req, res) => {
+  try {
+    const viewads = await AdsModel.find();
+    res.json(viewads);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
