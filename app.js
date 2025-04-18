@@ -110,15 +110,19 @@ app.post("/cusreview", upload.single("image"), async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
+
 app.post("/resads", upload.single("image"), async (req, res) => {
   try {
-    const { title, description } = req.body;
+    const { title, description, hotelId } = req.body;
     if (!req.file) return res.status(400).json({ error: "Please upload an image!" });
 
-    const newAds = new AdsModel ({
+    const newAds = new AdsModel({
       image: req.file.path, // ✅ Save image path
       title,
-      description
+      description,
+      hotelId
     });
 
     await newAds.save();
@@ -437,14 +441,65 @@ app.get("/viewreview", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-app.get("/viewads", async (req, res) => {
+
+
+
+
+
+
+app.post("/viewads", async (req, res) => {
   try {
-    const viewads = await AdsModel.find();
+    const { hotelId } = req.body;
+
+    let filter = {};
+    if (hotelId) {
+      filter = { hotelId }; // Filter by hotelId
+    }
+
+    const viewads = await AdsModel.find(filter);
     res.json(viewads);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
+
+
+
+
+app.get("/viewadmincusads", async (req, res) => {
+  try {
+    const viewads = await AdsModel.find(); // Fetch all ads
+
+    const adsWithRestaurantNames = await Promise.all(viewads.map(async (adDoc) => {
+      const hotelId = new mongoose.Types.ObjectId(adDoc.hotelId);
+      const hotel = await restaurantregModel.findById(hotelId);
+
+      // Convert Mongoose document to plain JS object
+      const ad = adDoc.toObject();
+
+      // Append restaurantName
+      ad.restaurantName = hotel ? hotel.restaurantName : null;
+
+      return ad;
+    }));
+
+    res.json(adsWithRestaurantNames);
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
+
+
+
+
+
+
 
 app.post("/delres", async (req, res) => {
   try {
