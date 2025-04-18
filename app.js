@@ -577,20 +577,26 @@ app.post('/vieworders', async (req, res) => {
 app.post('/saveAcceptedOrder', async (req, res) => {
   const { orderId, customerName, orderDate, grandTotal, items, hotelId, timeSlot } = req.body;
 
-  // Convert "DD/MM/YYYY" string to Date object
-  const parsedDate = new Date(orderDate.split('/').reverse().join('-'));
-
-  const newOrder = new AcceptedOrder({
-    orderId,
-    customerName,
-    orderDate: parsedDate,
-    grandTotal,
-    items,
-    hotelId,
-    timeSlot
-  });
-
   try {
+    // Convert "DD/MM/YYYY" string to Date object
+    const parsedDate = new Date(orderDate.split('/').reverse().join('-'));
+
+    // Ensure all items have correct structure: { name, count }
+    const sanitizedItems = (items || []).map(item => ({
+      name: item.name,
+      count: Number(item.count), // Ensure count is a number
+    }));
+
+    const newOrder = new AcceptedOrder({
+      orderId,
+      customerName,
+      orderDate: parsedDate,
+      grandTotal: Number(grandTotal),
+      items: sanitizedItems,
+      hotelId,
+      timeSlot
+    });
+
     await newOrder.save();
     res.status(200).send({ message: 'Order accepted and saved!' });
   } catch (error) {
@@ -598,6 +604,7 @@ app.post('/saveAcceptedOrder', async (req, res) => {
     res.status(500).send({ message: 'Error saving accepted order.', error });
   }
 });
+
 
 
 // API to get accepted orders
@@ -628,6 +635,84 @@ app.post('/getUserOrders', async (req, res) => {
 
 
 
+// Update Menu Item API (POST Request)
+app.post('/updateMenuItem', async (req, res) => {
+  const { itemId, category, name, price } = req.body;
+
+  // Depending on the category, choose the appropriate collection to update
+  let collection;
+  let updateFields;
+
+  switch (category) {
+    case 'starters':
+      collection = starter;
+      updateFields = { item: name, price: price };
+      break;
+    case 'mainCourse':
+      collection = main_course;
+      updateFields = { mitem: name, mprice: price }; // Adjusted field names
+      break;
+    case 'desserts':
+      collection = desserts;
+      updateFields = { ditem: name, dprice: price }; // Adjusted field names
+      break;
+    default:
+      return res.status(400).send("Invalid category.");
+  }
+
+  try {
+    const updatedItem = await collection.findByIdAndUpdate(
+      itemId,
+      { $set: updateFields },
+      { new: true }
+    );
+
+    if (!updatedItem) {
+      return res.status(404).send("Item not found.");
+    }
+
+    res.status(200).send(updatedItem);
+  } catch (error) {
+    console.error("Error updating item:", error);
+    res.status(500).send("Internal server error.");
+  }
+});
+
+
+
+app.post('/deleteMenuItem', async (req, res) => {
+  const { itemId, category } = req.body;
+
+  // Depending on the category, choose the appropriate collection to delete from
+  let collection;
+
+  switch (category) {
+    case 'starters':
+      collection = starter;
+      break;
+    case 'mainCourse':
+      collection = main_course;
+      break;
+    case 'desserts':
+      collection = desserts;
+      break;
+    default:
+      return res.status(400).send("Invalid category.");
+  }
+
+  try {
+    const deletedItem = await collection.findByIdAndDelete(itemId);
+
+    if (!deletedItem) {
+      return res.status(404).send("Item not found.");
+    }
+
+    res.status(200).send({ message: `Deleted item: ${deletedItem.item || deletedItem.mitem || deletedItem.ditem}` });
+  } catch (error) {
+    console.error("Error deleting item:", error);
+    res.status(500).send("Internal server error.");
+  }
+});
 
 
 
