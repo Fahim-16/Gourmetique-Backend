@@ -681,11 +681,28 @@ app.post('/getUserOrders', async (req, res) => {
 
   try {
     const orders = await orderModel.find({ customerId: customerId });
-    res.status(200).json(orders);
+
+    const ordersWithRestaurantNames = await Promise.all(
+      orders.map(async (ordersDoc) => {
+        const hotelId = new mongoose.Types.ObjectId(ordersDoc.hotelId);
+        const hotel = await restaurantregModel.findById(hotelId);
+
+        // Corrected: Use ordersDoc instead of adDoc
+        const orderObject = ordersDoc.toObject();
+
+        // Append restaurantName
+        orderObject.restaurantName = hotel ? hotel.restaurantName : null;
+
+        return orderObject;
+      })
+    );
+
+    res.status(200).json(ordersWithRestaurantNames);
   } catch (error) {
     res.status(500).send({ message: 'Error retrieving orders.', error });
   }
 });
+
 
 
 
